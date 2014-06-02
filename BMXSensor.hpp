@@ -2,12 +2,14 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <cstdlib>
 #include <boost\asio.hpp>
+#include <boost\thread.hpp>
 #include <boost\system\system_error.hpp>
 #include <boost/utility.hpp>
 #include "RS232.h"
 #include "crc16.hpp"
-#include "TimeoutSerial.h"
+#include "BufferedAsyncSerial.h"
 
 using namespace std;
 using namespace boost::system;
@@ -29,17 +31,20 @@ public:
     uint8_t* found_addresses();
 private:
     uint8_t m_buffer[5];
+    char m_buffer2[7];
     uint16_t m_found_devices;
     uint16_t m_crc_int;
     uint16_t m_crc_package;
     uint8_t  m_found_addresses[0xFFFF];
     uint8_t m_command[14];
     uint8_t m_choose_flash[5];
+//    uint8_t m_lookup[14];
     uint8_t m_send_pack_size[6];
+    uint16_t m_timeout;
 
     CRC16 m_check;
     RS232::SerialConnection serial;
     io_service ioService;
     serial_port serialPort;
-    TimeoutSerial serialto;
+    BufferedAsyncSerial serialto;
 };

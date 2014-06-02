@@ -19,6 +19,7 @@
 				<Linker>
 					<Add option="-lws2_32" />
 					<Add library="C:\boost_1_55_0\stage\lib\libboost_system-mgw47-mt-d-1_55.a" />
+					<Add library="C:\boost_1_55_0\stage\lib\libboost_thread-mgw47-mt-d-1_55.a" />
 					<Add directory="C:/boost_1_55_0/stage/lib" />
 				</Linker>
 			</Target>
@@ -28,13 +29,14 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-O2" />
+					<Add option="-Os" />
 					<Add directory="C:/boost_1_55_0" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
 					<Add option="-lws2_32" />
 					<Add library="C:\boost_1_55_0\stage\lib\libboost_system-mgw47-mt-1_55.a" />
+					<Add library="C:\boost_1_55_0\stage\lib\libboost_thread-mgw47-mt-1_55.a" />
 					<Add directory="C:/boost_1_55_0/stage/lib" />
 				</Linker>
 			</Target>
@@ -44,9 +46,15 @@
 			<Add option="-fexceptions" />
 			<Add directory="C:/boost_1_55_0" />
 		</Compiler>
+		<Unit filename="AsyncSerial.cpp" />
+		<Unit filename="AsyncSerial.h" />
 		<Unit filename="BE.ico" />
 		<Unit filename="BMXSensor.cpp" />
 		<Unit filename="BMXSensor.hpp" />
+		<Unit filename="BufferedAsyncSerial.cpp">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="BufferedAsyncSerial.h" />
 		<Unit filename="RS232.cpp" />
 		<Unit filename="RS232.h" />
 		<Unit filename="TimeoutSerial.cpp" />

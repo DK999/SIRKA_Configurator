@@ -161,8 +161,8 @@ void BMXSensor::flash_device()
 }
 
 void BMXSensor::change_address()
-{   serial.OpenPort(2,1000000);
-    uint8_t Change[8] = {0xAA,0xAA,0x08,0x01,0x13,0x01,0x00,0x00};
+{   serialto.open("COM2",1000000);
+    char Change[8] = {0xAA,0xAA,0x08,0x01,0x13,0x01,0x00,0x00};
     int old,new_address;
 
     cout<<"Old Address:";
@@ -178,38 +178,49 @@ void BMXSensor::change_address()
     }
     Change[CRCL] = (uint8_t)m_crc_int;
     Change[CRCH] = (uint8_t)(m_crc_int >> 8 );
-    serial.SendByteArray(2,Change,sizeof(Change));
-    serial.ClosePort(2);
+    serialto.write(Change,sizeof(Change));
+    this_thread::sleep(posix_time::millisec(10));
+    serialto.close();
+    this_thread::sleep(posix_time::millisec(1000));
+    std::system("cls");
 }
 
 void BMXSensor::lookup_addresses()
-{   serial.OpenPort(2,1000000);
-    m_command[PREAMBLE_ONE] = 0xAA;             // PREAMBLE
-    m_command[PREAMBLE_TWO] = 0xAA;             // PREAMBLE
-    m_command[ADDRESS] = 0x00;                  // set Address to 00
-    m_command[LENGTH] = 8;                      // set FRAME LENGTH
-    m_command[COMMAND] = 0x14;                  // Choose "send_hello" command
-    m_command[PARAMETER] = 0x00;                // No Parameter needed
+{
+    char m_lookup[8]={0xAA,0xAA,0x08,0x00,0x14,0x00,0x00,0x00};
+    serialto.open("COM2",1000000);
     int nr = 0;
     m_found_devices = 0;
+    m_timeout = 0xFFFF;
+    m_buffer2[4]=0;
 
-         for ( int i = 0; i < 127; i++)          // m_check for 20 Sensors
+         for ( int i = 0; i < 129; i++)          // m_check for 127 Sensors
         {
             m_crc_int = 0;
             for(int crc_count = 0; crc_count < 6 ; crc_count++)
             {
-                m_crc_int = m_check.CreateCRC(m_crc_int,m_command[crc_count]);
+                m_crc_int = m_check.CreateCRC(m_crc_int,m_lookup[crc_count]);
             }
-            m_command[CRCL] = (uint8_t)m_crc_int;
-            m_command[CRCH] = (uint8_t)(m_crc_int >> 8 );
+            m_lookup[CRCL] = (uint8_t)m_crc_int;
+            m_lookup[CRCH] = (uint8_t)(m_crc_int >> 8 );
+            try {
 
-             serial.SendByteArray(2,m_command,sizeof(m_command));    // Send Hello Byte
-             if(serial.ReadByteArray(2,m_buffer,sizeof(m_buffer)))   // Read if answer available
+             serialto.write(m_lookup,sizeof(m_lookup));
+             this_thread::sleep(posix_time::millisec(10));
+             serialto.read(m_buffer2,sizeof(m_buffer2));
+             } catch(boost::system::system_error& e)
+            {
+                cout<<"Error: "<<e.what()<<endl;
+
+            }
+
+             if(m_buffer2[4] != 0)   // Read if answer available
                 {   /* If Device responds, increase number of devices and note address */
                     m_found_devices++;                            // If answer, increase nr of devices
-                    m_found_addresses[nr++] = (int)m_command[ADDRESS];           // save address to devicenumber
+                    m_found_addresses[nr++] = (int)m_buffer2[4];           // save address to devicenumber
                 }
-                m_command[ADDRESS]++;                                       // increase address
+                m_lookup[ADDRESS]++;   // increase address
+                m_buffer2[4]=0;
         }
-    serial.ClosePort(2);
+    serialto.close();
 }

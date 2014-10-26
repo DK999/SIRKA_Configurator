@@ -28,7 +28,7 @@ void BMXSensor::OpenPortBoost()
 {
     serialPort.open("\\\\.\\COM2");
 
-    serialPort.set_option(serial_port::baud_rate(1000000));
+    serialPort.set_option(serial_port::baud_rate(2000000));
     serialPort.set_option(serial_port::parity(serial_port::parity::none));
     serialPort.set_option(serial_port::character_size(serial_port::character_size(8)));
     serialPort.set_option(serial_port::stop_bits(serial_port::stop_bits::one));
@@ -161,7 +161,7 @@ void BMXSensor::flash_device()
 }
 
 void BMXSensor::change_address()
-{   serialto.open("COM2",1000000);
+{   serialto.open("COM2",2000000);
     char Change[8] = {0xAA,0xAA,0x08,0x01,0x13,0x01,0x00,0x00};
     int old,new_address;
 
@@ -188,7 +188,7 @@ void BMXSensor::change_address()
 void BMXSensor::lookup_addresses()
 {
     char m_lookup[8]={0xAA,0xAA,0x08,0x00,0x14,0x00,0x00,0x00};
-    serialto.open("COM2",1000000);
+    serialto.open("COM2",2000000);
     int nr = 0;
     m_found_devices = 0;
     m_timeout = 0xFFFF;

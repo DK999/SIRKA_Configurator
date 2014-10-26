@@ -36,7 +36,7 @@ private:
     uint16_t m_crc_int;
     uint16_t m_crc_package;
     uint8_t  m_found_addresses[0xFFFF];
-    uint8_t m_command[14];
+    uint8_t m_command[22];
     uint8_t m_choose_flash[5];
 //    uint8_t m_lookup[14];
     uint8_t m_send_pack_size[6];

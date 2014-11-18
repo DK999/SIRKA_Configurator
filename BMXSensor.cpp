@@ -9,6 +9,8 @@
 #define CRCL 6
 #define CRCH 7
 
+#define BITS_PER_PACKET 32
+
 BMXSensor::BMXSensor():
     m_found_devices(0),m_crc_int(0),serialPort(ioService)
 {};
@@ -79,8 +81,8 @@ void BMXSensor::flash_device()
         m_choose_flash[4]=0x00;
 
         serialPort.write_some(buffer(m_choose_flash));
-        nr_of_packages = end_of_file / 16;
-        if ( end_of_file % 16 != 0)
+        nr_of_packages = end_of_file / BITS_PER_PACKET;
+        if ( end_of_file % BITS_PER_PACKET != 0)
             nr_of_packages++;
         m_send_pack_size[0]=0xAA;
         m_send_pack_size[1]=0xAA;
@@ -94,15 +96,15 @@ void BMXSensor::flash_device()
 
         for ( int k = 0; k < nr_of_packages ; k++)
         {
-            for( int i = 0; i < 16; i++)
+            for( int i = 0; i < BITS_PER_PACKET; i++)
             {   m_command[0]=0xAA;
                 m_command[1]=0xAA;
-                m_command[2]=0x16;
+                m_command[2]=0x26;
                 m_command[3]=0x7F;
                 m_command[i+4]=file_buffer[current_position++];
                 if ( current_position == end_of_file )
                 {   i++;
-                    for ( i = i; i < 16 ; i++)
+                    for ( i = i; i < BITS_PER_PACKET ; i++)
                     {
                         m_command[i+4]=0x01;
                     }
@@ -110,12 +112,12 @@ void BMXSensor::flash_device()
                 }
             }
             m_crc_int = 0;
-            for(int crc_count = 0; crc_count < 20 ; crc_count++)
+            for(int crc_count = 0; crc_count < 36 ; crc_count++)
             {
                 m_crc_int = m_check.CreateCRC(m_crc_int,m_command[crc_count]);
             }
-            m_command[20] = (uint8_t)m_crc_int;
-            m_command[21] = (uint8_t)(m_crc_int >> 8 );
+            m_command[36] = (uint8_t)m_crc_int;
+            m_command[37] = (uint8_t)(m_crc_int >> 8 );
 
 //            serial.SendByteArray(2,m_command,sizeof(m_command));
             serialPort.write_some(buffer(m_command));
@@ -127,13 +129,13 @@ void BMXSensor::flash_device()
             else
             {
                 cout<<"CRC FAIL"<<endl;
-                current_position-=16;
+                current_position-=32;
                 k--;
             }
             }
             m_command[0]=0xAA;
             m_command[1]=0xAA;
-            m_command[2]=0x16;
+            m_command[2]=0x26;
             m_command[3]=0x7F;
             m_command[4]=(uint8_t)m_crc_package;
             m_command[5]=(uint8_t)(m_crc_package >> 8 );
@@ -151,13 +153,29 @@ void BMXSensor::flash_device()
             m_command[17]=0xFF;
             m_command[18]=0xFF;
             m_command[19]=0xFF;
+            m_command[20]=0xFF;
+            m_command[21]=0xFF;
+            m_command[22]=0xFF;
+            m_command[23]=0xFF;
+            m_command[24]=0xFF;
+            m_command[25]=0xFF;
+            m_command[26]=0xFF;
+            m_command[27]=0xFF;
+            m_command[28]=0xFF;
+            m_command[29]=0xFF;
+            m_command[30]=0xFF;
+            m_command[31]=0xFF;
+            m_command[32]=0xFF;
+            m_command[33]=0xFF;
+            m_command[34]=0xFF;
+            m_command[35]=0xFF;
             m_crc_int = 0;
-            for(int crc_count = 0; crc_count < 20 ; crc_count++)
+            for(int crc_count = 0; crc_count < 36 ; crc_count++)
             {
                 m_crc_int = m_check.CreateCRC(m_crc_int,m_command[crc_count]);
             }
-            m_command[20] = (uint8_t)m_crc_int;
-            m_command[21] = (uint8_t)(m_crc_int >> 8 );
+            m_command[36] = (uint8_t)m_crc_int;
+            m_command[37] = (uint8_t)(m_crc_int >> 8 );
             serialPort.write_some(buffer(m_command));
     }
     else
